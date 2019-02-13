@@ -11,18 +11,23 @@ function movieThis(name) {
   axios
     .get("http://www.omdbapi.com/?t=" + name + "&y=&plot=short&apikey=trilogy")
     .then(function(response) {
-      console.log("Title: " + response.data.Title);
-      console.log("Year: " + response.data.Year);
-      console.log("IMDB Rating: " + response.data.imdbRating);
-      console.log("Rotten Tomatoes Rating: " + response.data.Ratings[1].Value);
-      console.log("Language: " + response.data.Language);
-      console.log("Plot: " + response.data.Plot);
-      console.log("Cast: " + response.data.Actors);
+      if (response.data.Response === "False") {
+        console.log(response.data.Error);
+      } else {
+        console.log("Title: " + response.data.Title);
+        console.log("Year: " + response.data.Year);
+        console.log("IMDB Rating: " + response.data.imdbRating);
+        console.log(
+          "Rotten Tomatoes Rating: " + response.data.Ratings[1].Value
+        );
+        console.log("Language: " + response.data.Language);
+        console.log("Plot: " + response.data.Plot);
+        console.log("Cast: " + response.data.Actors);
+      }
     });
 }
 
 function spotifyThis(name) {
-  console.log(name);
   spotify
     .search({ type: "track", query: name })
     .then(function(response) {
@@ -55,7 +60,7 @@ function concertThis(artist) {
         "/events?app_id=codingbootcamp"
     )
     .then(function(response) {
-      if (response.data.length === 0) {
+      if (response.data.length === 0 && response.data !== "") {
         console.log("There are no upcoming events.");
       } else {
         for (var i = 0; i < response.data.length; i++) {
@@ -78,18 +83,22 @@ function surpriseMe() {
     }
     var dataArr = data.split(",");
     var parameterValue = dataArr[1].split('"').join("");
-    switch (dataArr[0]) {
-      case "spotify-this-song":
-        spotifyThis(parameterValue);
-        break;
-      case "concert-this":
-        concertThis(parameterValue);
-        break;
-      case "movie-this":
-        movieThis(parameterValue);
-        break;
-      default:
-        console.log("Nothing specified in file.");
+    if (parameterValue === "") {
+      console.log("Enter name of artist, song, or event in the file.");
+    } else {
+      switch (dataArr[0]) {
+        case "spotify-this-song":
+          spotifyThis(parameterValue);
+          break;
+        case "concert-this":
+          concertThis(parameterValue);
+          break;
+        case "movie-this":
+          movieThis(parameterValue);
+          break;
+        default:
+          console.log("Nothing specified in file.");
+      }
     }
   });
 }
@@ -117,7 +126,7 @@ inquirer
           .then(function(inquirerResponse) {
             if (inquirerResponse.artistName === "") {
               console.log("No artist was entered.");
-            } else concertThis(inquirerResponse.artistName);
+            } else concertThis(inquirerResponse.artistName.trim());
           });
         break;
       case "Spotify":
@@ -133,7 +142,7 @@ inquirer
             if (inquirerResponse.songName === "") {
               inquirerResponse.songName = "The Sign";
             }
-            spotifyThis(inquirerResponse.songName);
+            spotifyThis(inquirerResponse.songName.trim());
           });
         break;
       case "Movies":
@@ -149,7 +158,7 @@ inquirer
             if (inquirerResponse.movieName === "") {
               inquirerResponse.movieName = "Mr. Nobody";
             }
-            movieThis(inquirerResponse.movieName);
+            movieThis(inquirerResponse.movieName.trim());
           });
         break;
       case "Surprise Me":
