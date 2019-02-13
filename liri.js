@@ -11,23 +11,18 @@ function movieThis(name) {
   axios
     .get("http://www.omdbapi.com/?t=" + name + "&y=&plot=short&apikey=trilogy")
     .then(function(response) {
-      if (response.data.error !== "") {
-        console.log(response.data.Error);
-      } else {
-        console.log("Title: " + response.data.Title);
-        console.log("Year: " + response.data.Year);
-        console.log("IMDB Rating: " + response.data.imdbRating);
-        console.log(
-          "Rotten Tomatoes Rating: " + response.data.Ratings[1].Value
-        );
-        console.log("Language: " + response.data.Language);
-        console.log("Plot: " + response.data.Plot);
-        console.log("Cast: " + response.data.Actors);
-      }
+      console.log("Title: " + response.data.Title);
+      console.log("Year: " + response.data.Year);
+      console.log("IMDB Rating: " + response.data.imdbRating);
+      console.log("Rotten Tomatoes Rating: " + response.data.Ratings[1].Value);
+      console.log("Language: " + response.data.Language);
+      console.log("Plot: " + response.data.Plot);
+      console.log("Cast: " + response.data.Actors);
     });
 }
 
 function spotifyThis(name) {
+  console.log(name);
   spotify
     .search({ type: "track", query: name })
     .then(function(response) {
