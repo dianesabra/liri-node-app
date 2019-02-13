@@ -3,7 +3,6 @@ var keys = require("./keys.js");
 var Spotify = require("node-spotify-api");
 var inquirer = require("inquirer");
 var axios = require("axios");
-var inspect = require("inspect");
 var moment = require("moment");
 var spotify = new Spotify(keys.spotify);
 var fs = require("fs");
@@ -12,14 +11,19 @@ function movieThis(name) {
   axios
     .get("http://www.omdbapi.com/?t=" + name + "&y=&plot=short&apikey=trilogy")
     .then(function(response) {
-      console.log(response);
-      console.log("Title: " + response.data.Title);
-      console.log("Year: " + response.data.Year);
-      console.log("IMDB Rating: " + response.data.imdbRating);
-      console.log("Rotten Tomatoes Rating: " + response.data.Ratings[1].Value);
-      console.log("Language: " + response.data.Language);
-      console.log("Plot: " + response.data.Plot);
-      console.log("Cast: " + response.data.Actors);
+      if (response.data.error !== "") {
+        console.log(response.data.Error);
+      } else {
+        console.log("Title: " + response.data.Title);
+        console.log("Year: " + response.data.Year);
+        console.log("IMDB Rating: " + response.data.imdbRating);
+        console.log(
+          "Rotten Tomatoes Rating: " + response.data.Ratings[1].Value
+        );
+        console.log("Language: " + response.data.Language);
+        console.log("Plot: " + response.data.Plot);
+        console.log("Cast: " + response.data.Actors);
+      }
     });
 }
 
@@ -27,7 +31,21 @@ function spotifyThis(name) {
   spotify
     .search({ type: "track", query: name })
     .then(function(response) {
-      console.log(response);
+      if (response.tracks.total === 0) {
+        console.log("There is no song found with the name of " + name + ".");
+      } else {
+        songArray = response.tracks.items;
+        for (var i = 0; i < songArray.length; i++) {
+          for (var j = 0; j < songArray[i].artists.length; j++) {
+            artistsString = JSON.stringify(songArray[i].artists[j].name);
+            console.log("Artists: " + artistsString);
+            console.log("Song Name: " + songArray[i].name);
+            console.log("Preview URL: " + songArray[i].preview_url);
+            console.log("Album Name: " + songArray[i].album.name);
+            console.log("--------------------");
+          }
+        }
+      }
     })
     .catch(function(err) {
       console.log(err);
@@ -42,13 +60,12 @@ function concertThis(artist) {
         "/events?app_id=codingbootcamp"
     )
     .then(function(response) {
-      console.log(response);
       if (response.data.length === 0) {
         console.log("There are no upcoming events.");
       } else {
         for (var i = 0; i < response.data.length; i++) {
           console.log("Venue Name: " + response.data[i].venue.name);
-          console.log("Venue Location: " + response.data[i].venue.name); //??
+          console.log("Venue Location: " + response.data[i].venue.city); //??
           console.log(
             "Venue Name: " +
               moment(response.data[i].venue.datetime).format("MM/DD/YYYY")
@@ -60,7 +77,7 @@ function concertThis(artist) {
 }
 
 function surpriseMe() {
-  fs.readFile("random3.txt", "utf8", function(error, data) {
+  fs.readFile("random.txt", "utf8", function(error, data) {
     if (error) {
       return console.log(error);
     }
@@ -77,7 +94,7 @@ function surpriseMe() {
         movieThis(parameterValue);
         break;
       default:
-      // code block
+        console.log("Nothing specified in file.");
     }
   });
 }
@@ -119,8 +136,9 @@ inquirer
           ])
           .then(function(inquirerResponse) {
             if (inquirerResponse.songName === "") {
-              console.log("No song was entered.");
-            } else spotifyThis(inquirerResponse.songName);
+              inquirerResponse.songName = "The Sign";
+            }
+            spotifyThis(inquirerResponse.songName);
           });
         break;
       case "Movies":
@@ -143,6 +161,6 @@ inquirer
         surpriseMe();
         break;
       default:
-      // code block
+        console.log("No choices made.");
     }
   });
